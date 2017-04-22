@@ -1,14 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ValueitServer", "ValueitServer\ValueitServer.csproj", "{9FF518C3-94A8-4251-B7C1-9795953E0333}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B5203890-5835-4EA1-8385-6B364D621048}"
 	ProjectSection(SolutionItems) = preProject
 		oldCode.txt = oldCode.txt
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uClockServer", "uClockServer\uClockServer.csproj", "{9FF518C3-94A8-4251-B7C1-9795953E0333}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,4 @@
-﻿namespace ValueitServer
+﻿namespace uClockServer
 {
     class Program
     {
