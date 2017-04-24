@@ -36,19 +36,20 @@ class Server
     {
         int[] bytesAsInts = byteStream.Select(x => (int)x).ToArray();
         int i = 0;
-        int g;
+        int g = 0;
+
         try
         {
-            while (true)
-            {
+            while (i < bytesAsInts.Length) {
                 g = bytesAsInts[i];
-                if (g > 0) i++;
-                else break;      
+                if (g != 0) i++;
+                else break;
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine("Packet Error");
+            Console.WriteLine(ex);
             tcpThread.Abort();
         }
 
@@ -79,32 +80,39 @@ class Server
         MySqlConnection conn = new MySqlConnection(myConnectionString);
         DataTable dt = new DataTable();
         MySqlCommand cmd;
+        DataSet ds = new DataSet();
         MySqlDataAdapter sda;
+        int pacNum = 0;
         
         // Get the number of packets
-        byte[] byteStream = new byte[1];
+        byte[] byteStream = new byte[200];
         stream.Read(byteStream, 0, byteStream.Length);
-
-        if(Int32.TryParse(this.GetPacket(byteStream), out int pacNum))
+        try
         {
+            pacNum = Int32.Parse(this.GetPacket(byteStream));
             parameters = new string[pacNum - 2];
+            stream.Write(byteStream, 0, byteStream.Length);
         }
-        else
+        
+        catch(Exception ex)
         {
             tcpThread.Abort();
             conn.Close();
-
             mClient.Close();
         }
 
         // Get the sql query string
+        byteStream = new byte[500];
         stream.Read(byteStream, 0, byteStream.Length);
         command = this.GetPacket(byteStream);
+        stream.Write(byteStream, 0, byteStream.Length);
 
         // Get the rest of the packets
-        for (int i = 2; i < byteStream[0]; i++)
+        for (int i = 0; i < pacNum - 2; i++)
         {
+            byteStream = new byte[200];
             stream.Read(byteStream, 0, byteStream.Length);
+            stream.Write(byteStream, 0, byteStream.Length);
             parameters[i] = this.GetPacket(byteStream);
         }
 
@@ -113,9 +121,9 @@ class Server
             conn = new MySqlConnection(myConnectionString);
             conn.Open();
 
-            //cmd = new MySqlCommand(command, conn);
+            cmd = new MySqlCommand(command, conn);
 
-            cmd = new MySqlCommand(command);
+            //cmd = new MySqlCommand(command);
 
             // Adds parameters to the sql command
             for(int i = 0; i < parameters.Length; i++)
@@ -123,16 +131,17 @@ class Server
                 cmd.Parameters.AddWithValue("@"+ parameters[i], parameters[i]);
             }
 
-            cmd.ExecuteReader();
+            MySqlDataReader rd = cmd.ExecuteReader();
+            ds.Tables.Add(dt);
+            ds.EnforceConstraints = false;
+            dt.Load(rd);
             
-            sda = new MySqlDataAdapter(cmd);
-            sda.Fill(dt);
-
             this.returnData(dt, stream);
 
-            tcpThread.Abort();
             conn.Close();
-
+            rd.Close();
+            dt.Dispose();
+            cmd.Dispose();
             mClient.Close();
         }
         catch (Exception ex)
